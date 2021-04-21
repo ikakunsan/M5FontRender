@@ -101,6 +101,14 @@ void M5FontRender::drawString(const char *string, int32_t poX, int32_t poY) {
     drawString(string, poX, poY, _font_color, _font_bgcolor, &_font_render);
 }
 
+void M5FontRender::drawString2(const char *string, int32_t poX, int32_t poY, uint16_t fg) {
+    drawString2(string, poX, poY, fg, _font_bgcolor, &_font_render);
+}
+
+void M5FontRender::drawString2(const char *string, int32_t poX, int32_t poY) {
+    drawString2(string, poX, poY, _font_color, _font_bgcolor, &_font_render);
+}
+
 void M5FontRender::printf(const char* fmt, ...) {
     char str[256] = {0};
     va_list ap;
@@ -110,6 +118,17 @@ void M5FontRender::printf(const char* fmt, ...) {
     va_end(ap);
 
     drawString(str, _posX, _posY);
+}
+
+void M5FontRender::printf2(const char* fmt, ...) {
+    char str[256] = {0};
+    va_list ap;
+
+    va_start(ap, fmt);
+    vsnprintf(str, 256, fmt, ap);
+    va_end(ap);
+
+    drawString2(str, _posX, _posY);
 }
 
 /************************
@@ -193,6 +212,44 @@ void M5FontRender::drawString(const char *string, int32_t poX, int32_t poY, uint
             poX = 0;
             base_y += render->max_pixel_height;
         }
+        drawFreetypeBitmap(poX + render->bitmap_left, base_y - render->bitmap_top, render->bitmap_width, render->bitmap_height,
+        fg, bg, render->bitmap);
+        poX += render->advance;
+        sumX += render->advance;
+    }
+    _posX = poX;
+    _posY = base_y - render->max_pixel_height;
+}
+
+void M5FontRender::drawString2(const char *string, int32_t poX, int32_t poY, uint16_t fg, uint16_t bg, font_render_t *render)
+{
+    int16_t sumX = 0;
+    uint16_t len = strlen(string);
+    uint16_t n = 0;
+    uint16_t base_y = poY + render->max_pixel_height;
+
+    while (n < len) {
+        uint16_t uniCode = decodeUTF8((uint8_t *)string, &n, len - n);
+
+        if (uniCode == 	0x000A || uniCode == 0x000D) {
+            // LF or CR
+            poX = 0;
+            if (uniCode == 0x000A) {
+                base_y += render->max_pixel_height;
+            }
+            continue;
+        }
+
+        if (font_render_glyph(render, uniCode) != ESP_OK) {
+            ESP_LOGE(TAG, "Font render faild.");
+        }
+        if (_auto_newline == true && poX + (render->bitmap_width) > _width) {
+            poX = 0;
+            base_y += render->max_pixel_height;
+        }
+        M5.Lcd.fillRect(poX, base_y - render->bitmap_top, render->bitmap_left, render->bitmap_height, bg);
+        M5.Lcd.fillRect(poX + render->bitmap_left + render->bitmap_width, base_y - render->bitmap_top, \
+                        render->advance - render->bitmap_left - render->bitmap_width, render->bitmap_height, bg);
         drawFreetypeBitmap(poX + render->bitmap_left, base_y - render->bitmap_top, render->bitmap_width, render->bitmap_height,
         fg, bg, render->bitmap);
         poX += render->advance;

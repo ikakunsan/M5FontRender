@@ -33,7 +33,10 @@ public:
 	//void setDrawPixelFunc(function<void>(int32_t x, int32_t y, uint32_t color) _drawPixel);
 	void    drawString(const char *string, int32_t poX, int32_t poY, uint16_t fg);
 	void    drawString(const char *string, int32_t poX, int32_t poY);
+	void    drawString2(const char *string, int32_t poX, int32_t poY, uint16_t fg);
+	void    drawString2(const char *string, int32_t poX, int32_t poY);
 	void    printf(const char* fmt, ...);
+    void    printf2(const char* fmt, ...);
 
 protected:
 	font_face_t _font_face;
@@ -52,6 +55,7 @@ protected:
 	void drawFreetypeBitmap(int32_t cx, int32_t cy, uint16_t bw, uint16_t bh, uint16_t fg, uint16_t bg, uint8_t *bitmap);
 	uint16_t decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining);
 	void drawString(const char *string, int32_t poX, int32_t poY, uint16_t fg, uint16_t bg, font_render_t *render);
+	void drawString2(const char *string, int32_t poX, int32_t poY, uint16_t fg, uint16_t bg, font_render_t *render);
 
 	//std::function<void>(int32_t x, int32_t y, uint32_t color) drawPixel = NULL;
 };
